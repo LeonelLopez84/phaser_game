@@ -16,12 +16,18 @@ var game=new Phaser.Game(w,h,Phaser.AUTO,'',{create:crear,preload:precargar,upda
 		//game.add.image(x,y,'platillo');
 
 		platillos=game.add.group();
-		platillos.enableBodt=true;
+		platillos.enableBody=true;
 		platillos.physicsBodyType=Phaser.Physics.ARCADE;
 		
 		for(var i=0; i < 10; i++)
 		{
-			platillos.create(100+i*50,50,'platillo');
+			var platillo=platillos.create(100+i*50,50,'platillo');
+
+			platillo.body.collideWorldBounds=true;
+			platillo.body.gravity.x= game.rnd.integerInRange(-50,50);
+			platillo.body.gravity.y= game.rnd.integerInRange(100,500);
+
+			platillo.body.bounce.setTo(0.8);
 		}
 	}
 
