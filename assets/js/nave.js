@@ -10,6 +10,7 @@ var mainState={
 
 		game.load.image('startfield','assets/img/espacio.png');
 		game.load.image('nave', 'assets/img/star.png');
+		
 
 	},
 	create:function(){
@@ -19,7 +20,7 @@ var mainState={
 		game.physics.startSystem(Phaser.Physics.ARCADE);
 		player = game.add.image(0, 0, 'nave');
 		game.physics.arcade.enable(player);
-
+		
 
 		cursors= game.input.keyboard.createCursorKeys();
 	}, 
