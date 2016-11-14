@@ -54,6 +54,7 @@ var game=new Phaser.Game(w,h,Phaser.AUTO,'',{create:crear,preload:precargar,upda
 		    barra2.body.immovable=true;
 
 		marciano=game.add.sprite(32,game.world.height-160,'marciano');
+		
 		game.physics.arcade.enable(marciano);
 		marciano.body.bounce.y=0.5;
 		marciano.body.gravity.y=300;
