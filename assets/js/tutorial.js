@@ -1,48 +1,146 @@
 var w=window.innerWidth;
 var h = window.innerHeight;
 
-var GameState={
+var platillos={};
+var stars={};
+var marciano={};
+var controles={};
+var score=0;
+var textoScore='';
+var textoFinal='';
+var fondo, boom;
 
-	preload:function(){
+var game=new Phaser.Game(w,h,Phaser.AUTO,'',{create:crear,preload:precargar,update:actualizar});
 
-		this.load.image('background','assets/img/espacio.JPG');
-		this.load.image('star','assets/img/star.png');
-		this.load.image('platillo','assets/img/nave.gif');
+	function precargar()
+	{
+		game.load.image('espacio','assets/img/espacio.png');
+		game.load.image('platillo','assets/img/nave.gif');
+		game.load.spritesheet('marciano', 'assets/img/sprites/dude.png',32,48);
+		game.load.image('star','assets/img/star.png');
+		game.load.audio('fondo','assets/audio/space.wav');
+		game.load.audio('boom','assets/audio/scifi_effects.mp3');
+	}
 
-	},
-	create:function(){
+	function crear()
+	{	
+		game.add.image(0,0,'espacio');
+		fondo = game.add.audio('fondo');
+		boom = game.add.audio('boom');
 
-		this.platillos=this.game.add.group();
-		this.platillos.enableBody=true;
-		this.platillos.physicsBodyType=Phaser.Physics.ARCADE;
+		fondo.play('',0,0.25,true);
+
+		platillos=game.add.group();
+		platillos.enableBody=true;
+		platillos.physicsBodyType=Phaser.Physics.ARCADE;
+
+		stars=game.add.group();
+		stars.enableBody=true;
+		stars.physicsBodyType=Phaser.Physics.ARCADE;
 
 
-		this.background = this.game.add.sprite(0,0,'background');
-		for(var i=0; i < 20; ++i){
+		marciano=game.add.sprite(32,game.world.height-160,'marciano');
+		
+		game.physics.arcade.enable(marciano);
+		marciano.body.bounce.y=0.5;
+		marciano.body.gravity.y=50;
+		marciano.body.gravity.x=50;
+		marciano.body.collideWorldBounds=true;
+
+		marciano.animations.add('izquierda',[0,1,2,3],10,true);
+		marciano.animations.add('derecha',[5,6,7,8],10,true);
+
+		for(var i=0; i < 10; ++i){
 			var rx=game.rnd.integerInRange(5,w-15);
 			var ry=game.rnd.integerInRange(5,h-15);
-			this.star = this.game.add.sprite(rx,ry,'star');
+			var star = stars.create(rx,ry,'star');
+				star.body.immovable=true;
 		}
 
-		for(var i=0; i < 10; i++)
+		for(var i=0; i < 5; i++)
 		{
-			this.platillo=this.platillos.create(100+i*50,game.rnd.integerInRange(0,500),'platillo');
+			var platillo=platillos.create(100+i*50,game.rnd.integerInRange(0,500),'platillo');
 
-			this.platillo.body.collideWorldBounds=true;
-			this.platillo.body.gravity.x= this.game.rnd.integerInRange(-100,100);
-			this.platillo.body.gravity.y= this.game.rnd.integerInRange(-250,250);
+			platillo.body.collideWorldBounds=true;
+			platillo.body.gravity.x= game.rnd.integerInRange(-100,100);
+			platillo.body.gravity.y= game.rnd.integerInRange(-100,100);
 
-			this.platillo.body.bounce.setTo(1);
+			platillo.body.bounce.setTo(1);
+
 		}
-	},
-	update:function()
-	{
-		game.physics.arcade.collide(this.platillos,this.platillos);
 
+		textoScore= game.add.text(20,20,'Marcador: '+score,{fontSize:'36px',fill:'#fff'});
+
+		controles=game.input.keyboard.createCursorKeys();
 	}
-};
 
-var game = new Phaser.Game(w,h,Phaser.AUTO);
+	function actualizar()
+	{
+		game.physics.arcade.collide(platillos,platillos);
+		game.physics.arcade.overlap(marciano,stars,recolectar,null,this);
+		
 
-game.state.add('GameState',GameState);
-game.state.start('GameState');
+		marciano.body.velocity.x=0;
+
+		if(controles.left.isDown){
+			marciano.body.velocity.x= -150;
+			marciano.animations.play('izquierda');
+		}else if(controles.right.isDown){
+			marciano.body.velocity.x=150;
+			marciano.animations.play('derecha');
+		}else{
+			marciano.animations.stop();
+			marciano.frame=4;
+		}
+
+		if(controles.up.isDown)
+		{
+			marciano.body.velocity.y= - 150;
+		}else if(controles.down.isDown){
+			marciano.body.velocity.y= 150;
+		}
+
+		if(score == 100){
+
+			textoFinal= game.add.text(100,250,'Felicidades Ganaste '+score+' puntos!!',{fontSize:'40px',fill:'#fff'});
+			game.physics.arcade.collide(marciano,platillos);
+		}else{
+			game.physics.arcade.overlap(marciano,platillos,muerte,null,this);
+		}
+	}
+
+	function recolectar(mar,st)
+	{
+		st.kill();
+		score+=10;
+		textoScore.text='Marcador: '+score;
+
+		boom.play('',14.6,1,false);
+
+		setTimeout(function(){
+			boom.stop();
+		},500);
+		
+	}
+
+
+	function muerte(mar,pla)
+	{
+		mar.kill();
+		score=0;
+		textoScore.text='Marcador: '+score;
+
+		boom.play('',0,1,false);
+
+		setTimeout(function(){
+			boom.stop();
+		},2500);
+	
+		textoFinal= game.add.text(game.world.centerX, game.world.centerY,'Has muerto!',{fontSize:'40px',fill:'#fff'});
+
+		fondo.stop();
+
+		
+	}
+
+
