@@ -1,6 +1,6 @@
-var w=window.innerWidth;
-var h=window.innerHeight;
-var game = new Phaser.Game(w,h,Phaser.AUTO,'',{create:crear,preload:precargar,update:actualizar});
+var w=$("#juego").width();
+var h=$("#juego").height();
+var game = new Phaser.Game(w,h,Phaser.AUTO,'juego',{create:crear,preload:precargar,update:actualizar});
 
 
 function precargar()
@@ -50,7 +50,7 @@ function crear()
 	asteroides2.physicsBodyType=Phaser.Physics.ARCADE;
 
 	explosions = game.add.group();
-    explosions.createMultiple(30, 'kaboom');
+    explosions.createMultiple(15, 'kaboom');
     explosions.forEach(setupAsteroid, this);
 
     scoreString='Score: ';
@@ -62,23 +62,15 @@ function crear()
 	textTime.anchor.set(1,1);
 
     currentTimer = game.time.create();
-	currentTimer.loop(Phaser.Timer.SECOND, function() {
-	
-			if(time > 0) {
-				time--;
-				textTime.setText('Time left: '+time);
-			}
-			else {
-				stateStatus = 'gameover';
-			}
-		}, this);
+	currentTimer.loop(Phaser.Timer.SECOND, subsChrono, this);
+
 		currentTimer.start();
 
     var s=0;
-	for(var i=0; i < 15; i++)
+	for(var i=0; i < 50; i++)
 	{
-			var x=game.rnd.integerInRange(50,w-50) + 10;
-			var y=game.rnd.integerInRange(50,h-50) + 10;
+			var x=game.rnd.integerInRange(100,w-100) + 10;
+			var y=game.rnd.integerInRange(100,h-100) + 10;
 			var star={};
 			var invader={};
 
@@ -110,8 +102,8 @@ function crear()
         	invader.events.onInputDown.add(touchInvader, this);
 		}
 
-			x=game.rnd.integerInRange(50,w-50) + 10;
-			y=game.rnd.integerInRange(50,h-50) + 10;
+			x=game.rnd.integerInRange(100,w-100) + 10;
+			y=game.rnd.integerInRange(100,h-100) + 10;
 
 			var asteroide2=asteroides2.create(x,y,'asteroide2');
 				asteroide2.scale.setTo(3);
@@ -149,13 +141,18 @@ function crear()
 
 function actualizar()
 {
-	game.physics.arcade.overlap(stars, scoreText, plusHandler, null, this);
 }
 
-function plusHandler(star,score)
-{
-	star.callAll('kill');
-
+ function subsChrono() 
+ {
+	
+	if(time > 0) {
+		time--;
+		textTime.setText('Time left: '+time);
+	}
+	else {
+		stateStatus = 'gameover';
+	}
 }
 
 function destroySprite (ast) {
